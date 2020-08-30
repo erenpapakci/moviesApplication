@@ -20,6 +20,12 @@
 
 ![](moviesapp.gif)
 
+## Installation Guide
 
+* git clone https://github.com/erenpapakci/moviesApplication.git
+
+* cd moviesApplication
+
+* pod install
 
 
