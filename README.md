@@ -51,5 +51,6 @@ class BaseViewController<T: BaseViewModel> : UIViewController, BaseViewControlle
 }
 ```
 
+## Acknowledgement
 
-
+Thanks for their guidance on base architectures and code review. <a href="https://github.com/sonmezvolkan">Volkan Sönmez</a>
