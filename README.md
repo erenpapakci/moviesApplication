@@ -5,6 +5,7 @@
 
 **This project was built with the mvvm architecture. It includes base viewcontroller and viewmodel, allowing you to build on different projects. A clean code was tried.**
 
+## Tech Stack
 
 > MVVM Architecture
 
@@ -30,7 +31,9 @@
 
 * pod install
 
-## Base View Controller
+## Base ViewController
+
+ViewControllers base is located here. Here more can be done in different additions. When creating a new viewmodel, it is important for clean code to get participation from here instead of doing new.
 
 ```javascript
 
@@ -50,6 +53,131 @@ class BaseViewController<T: BaseViewModel> : UIViewController, BaseViewControlle
         super.init(coder: coder)
     }
   
+}
+```
+
+## Base ViewController Protocol
+
+Here's what the viewcontrols promised.
+
+```javascript
+
+import Foundation
+import UIKit
+
+public protocol BaseViewControllerProtocol where Self: UIViewController {
+    
+    func startIndicator()
+    
+    func stopIndicator()
+}
+```
+
+## Base ViewModel
+
+```javascript
+
+public class BaseViewModel {
+    
+    public required init() {
+        
+    }
+}
+
+```
+
+## ViewModel Protocol
+
+Here's what the ViewModel promised. 
+
+
+```javascript
+
+public protocol HomeViewModelProtocol where Self: BaseViewModel {
+    
+    var movieResult: Observable<MovieResult> { get set }
+    
+    func searchMovies(searchText: String, page: Int)
+    
+    func clear()
+}
+```
+
+## ViewModel
+
+```javascript
+
+public final class DetailViewModel: BaseViewModel, DetailViewModelProtocol {
+    
+    public lazy var movieResult = Observable<MovieDetail>()
+    
+    public func detailMovies(movieId: Int) {
+        let movieId = String(movieId)
+        let query = Constant.baseUrlDetail + movieId + Constant.movieApiKey
+        Services.shared.execute(query: query, type: MovieDetail.self, completion: { [weak self] result in
+            self?.movieResult.data = result
+        })
+    }
+}
+```
+
+## Networking
+
+Network Module 3. part does not include a library. Uses URLSession. and assigns the request according to the incoming url.
+
+```javascript
+
+class Services {
+    
+    public static let shared = Services()
+    
+    private var viewController: BaseViewControllerProtocol?
+
+    public func execute<T: Codable>(query: String, type: T.Type, completion: @escaping (T) -> (), addIndicator: Bool = false, failure: ((String) -> Void)? = nil) {
+        guard let url = URL(string: query) else {
+            failure?("this format is not correct")
+            return
+        }
+        
+        startIndicatorIfNeeded(flag: addIndicator)
+                
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            self.stopIndicatorIfNeeded(flag: addIndicator)
+            
+            guard let data = data, error == nil else { return }
+            
+            print(String(decoding: data, as: UTF8.self))
+            
+            do {
+               var result = try JSONDecoder().decode(type, from: data)
+                completion(result)
+               }
+            catch (let ex) {
+                failure?(ex.localizedDescription)
+                print(ex.localizedDescription)
+                return
+            }
+
+        }.resume()
+    }
+    
+    private func startIndicatorIfNeeded(flag: Bool) {
+        if !flag { return }
+        
+        self.viewController = UIApplication.getTopMostViewController() as? BaseViewControllerProtocol
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.viewController?.startIndicator()
+        }
+    }
+    
+    private func stopIndicatorIfNeeded(flag: Bool) {
+        if !flag { return }
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.viewController?.stopIndicator()
+        }
+    }
 }
 ```
 
