@@ -8,6 +8,8 @@
 
 > MVVM Architecture
 
+> SOLID
+
 > Modular Architecture
 
 > Observers
